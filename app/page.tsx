@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import emailjs from "@emailjs/browser";
+
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useAnimation, useInView } from "framer-motion";
@@ -420,7 +422,7 @@ function AboutSection() {
             <div className="relative h-[350px] w-[350px] md:h-[450px] md:w-[450px] overflow-hidden rounded-lg">
               <div className="absolute inset-0 bg-gradient-to-tr from-purple-500 to-blue-500 opacity-20 blur-3xl" />
               <Image
-                src="/placeholder.svg?height=500&width=500"
+                src="/fin.png?height=500&width=500"
                 width={500}
                 height={500}
                 alt="About Fortechtechnology"
@@ -475,28 +477,28 @@ function ProjectsSection() {
     {
       title: "Modern E-Commerce Platform",
       category: "In Development",
-      image: "/placeholder.svg?height=400&width=600",
+      image: "/img12.png?height=400&width=600",
       description:
         "Building a next-generation e-commerce solution with AI-powered recommendations and seamless user experience.",
     },
     {
       title: "Healthcare Management System",
       category: "Prototype Phase",
-      image: "/placeholder.svg?height=400&width=600",
+      image: "/image2.png?height=400&width=600",
       description:
         "Developing an intuitive healthcare management platform to streamline patient care and administrative tasks.",
     },
     {
       title: "Financial Analytics Dashboard",
       category: "Planning Phase",
-      image: "/placeholder.svg?height=400&width=600",
+      image: "/img4.png?height=400&width=600",
       description:
         "Creating real-time financial analytics tools with predictive modeling for small to medium businesses.",
     },
     {
       title: "Supply Chain Optimizer",
       category: "Research Phase",
-      image: "/placeholder.svg?height=400&width=600",
+      image: "/img5.png?height=400&width=600",
       description:
         "Researching innovative solutions to help businesses optimize their supply chain operations using AI.",
     },
@@ -790,6 +792,94 @@ function ContactSection() {
   const controls = useAnimation();
   const ref = useRef(null);
   const inView = useInView(ref, { once: true });
+  const [formData, setFormData] = useState({
+    from_name: "",
+    email: "",
+    subject: "",
+    message: "",
+  });
+  const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false); // 👈 NEW
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
+
+  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
+  //   try {
+  //     await emailjs.send(
+  //       "service_annfliy",
+  //       "template_s0jxrka",
+  //       {
+  //         from_name: formData.from_name,
+  //         email: formData.email,
+  //         subject: formData.subject,
+  //         message: formData.message,
+  //         reply_to: formData.email,
+  //       },
+  //       "WC3ewKjJ59FELHMDt"
+  //     );
+
+  //     setStatus("✅ Message sent! We'll contact you shortly.");
+  //     setFormData({
+  //       from_name: "",
+  //       email: "",
+  //       subject: "",
+  //       message: "",
+  //     });
+  //   } catch (err) {
+  //     console.error(err);
+  //     setStatus("❌ Failed to send. Try again later.");
+  //   }
+  // };
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setLoading(true); // 👈 NEW
+    try {
+      // 1. Send email to Fortech (your inbox)
+      await emailjs.send(
+        "service_annfliy",
+        "template_s0jxrka",
+        {
+          from_name: formData.from_name,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          reply_to: formData.email,
+        },
+        "WC3ewKjJ59FELHMDt"
+      );
+
+      // 2. Send confirmation to user
+      await emailjs.send(
+        "service_annfliy",
+        "template_8oxeako", // 👈 confirmation template
+        {
+          to_name: formData.from_name,
+          email: formData.email,
+          // message:
+          //   "Thank you for contacting Fortechtechnology! We’ve received your message and will get back to you shortly.",
+          message: formData.message,
+        },
+        "WC3ewKjJ59FELHMDt"
+      );
+
+      setStatus("✅ Message sent! Confirmation has been emailed to you.");
+      setFormData({
+        from_name: "",
+        email: "",
+        subject: "",
+        message: "",
+      });
+    } catch (err) {
+      console.error(err);
+      setStatus("❌ Failed to send message. Please try again later.");
+    } finally {
+      setLoading(false); // 👈 NEW
+    }
+  };
 
   useEffect(() => {
     if (inView) {
@@ -856,7 +946,7 @@ function ContactSection() {
           </motion.div>
           <motion.div variants={itemVariants}>
             <Card>
-              <CardContent className="p-6">
+              {/* <CardContent className="p-6">
                 <form className="space-y-4">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <div className="space-y-2">
@@ -907,6 +997,99 @@ function ContactSection() {
                   <Button className="w-full bg-purple-600 hover:bg-purple-700">
                     Send Message
                   </Button>
+                </form>
+              </CardContent> */}
+              <CardContent className="p-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="from_name"
+                        className="text-sm font-medium"
+                      >
+                        Name
+                      </label>
+                      <Input
+                        id="from_name"
+                        value={formData.from_name}
+                        onChange={handleChange}
+                        placeholder="Enter your name"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label htmlFor="email" className="text-sm font-medium">
+                        Email
+                      </label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={formData.email}
+                        onChange={handleChange}
+                        placeholder="Enter your email"
+                        required
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="subject" className="text-sm font-medium">
+                      Subject
+                    </label>
+                    <Input
+                      id="subject"
+                      value={formData.subject}
+                      onChange={handleChange}
+                      placeholder="Enter subject"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <label htmlFor="message" className="text-sm font-medium">
+                      Message
+                    </label>
+                    <Textarea
+                      id="message"
+                      value={formData.message}
+                      onChange={handleChange}
+                      placeholder="Enter your message"
+                      className="min-h-[120px]"
+                      required
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full bg-purple-600 hover:bg-purple-700"
+                    disabled={loading} // 👈 NEW
+                  >
+                    {loading ? (
+                      <span className="flex items-center justify-center gap-2">
+                        <svg
+                          className="animate-spin h-4 w-4"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="white"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="white"
+                            d="M4 12a8 8 0 018-8v8z"
+                          />
+                        </svg>
+                        Sending...
+                      </span>
+                    ) : (
+                      "Send Message"
+                    )}
+                  </Button>
+
+                  {status && <p className="text-sm text-center">{status}</p>}
                 </form>
               </CardContent>
             </Card>
